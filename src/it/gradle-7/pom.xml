@@ -4,7 +4,7 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.marcnuri.plugins.it</groupId>
-  <artifactId>gradle-8</artifactId>
+  <artifactId>gradle-7</artifactId>
   <version>0.1-SNAPSHOT</version>
   <name>Maven Integration Test :: Gradle API :: Gradle 7</name>
 
@@ -18,25 +18,7 @@
     </dependency>
     <dependency>
       <groupId>org.gradle</groupId>
-      <artifactId>gradle-base-services</artifactId>
-      <version>${version.gradle.7}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.gradle</groupId>
-      <artifactId>gradle-core-api</artifactId>
-      <version>${version.gradle.7}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.gradle</groupId>
-      <artifactId>gradle-core</artifactId>
-      <version>${version.gradle.7}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.gradle</groupId>
-      <artifactId>gradle-model-core</artifactId>
+      <artifactId>gradle-all</artifactId>
       <version>${version.gradle.7}</version>
       <scope>provided</scope>
     </dependency>

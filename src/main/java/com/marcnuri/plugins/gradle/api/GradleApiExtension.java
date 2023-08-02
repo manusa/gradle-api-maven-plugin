@@ -1,47 +1,58 @@
 package com.marcnuri.plugins.gradle.api;
 
 import org.apache.maven.AbstractMavenLifecycleParticipant;
-import org.apache.maven.MavenExecutionException;
 import org.apache.maven.execution.MavenSession;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.plugin.logging.Log;
 import org.apache.maven.plugin.logging.SystemStreamLog;
+import org.apache.maven.project.MavenProject;
 
 import javax.inject.Named;
 import java.io.File;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import static com.marcnuri.plugins.gradle.api.GradleApi.GRADLE_ALL_ARTIFACT_ID;
 import static com.marcnuri.plugins.gradle.api.GradleApi.GRADLE_GROUP_ID;
 
 @Named("gradle-api")
 public class GradleApiExtension extends AbstractMavenLifecycleParticipant {
 
   @Override
-  public void afterProjectsRead(MavenSession session) throws MavenExecutionException {
+  public void afterProjectsRead(MavenSession session) {
     final Log log = new SystemStreamLog();
-    final Set<String> versions = new HashSet<>();
-    final Set<String> artifactIds = new HashSet<>();
-    session.getCurrentProject().getDependencies().stream()
-      .filter(d -> d.getGroupId().equals(GRADLE_GROUP_ID))
-      .forEach(d -> {
-        if (!Objects.equals(d.getScope(), "provided")) {
-          log.warn("Gradle API dependency should be provided, check: " + d.getGroupId() + ":" + d.getArtifactId());
-        }
-        artifactIds.add(d.getArtifactId());
-        versions.add(d.getVersion());
-      });
-    if (versions.size() > 1) {
-      throw new MavenExecutionException("Multiple Gradle API versions detected, please depend on a single version",
-        session.getCurrentProject().getFile());
+    final Map<MavenProject, Dependency> projects = new HashMap<>();
+    for (MavenProject project : session.getProjects()) {
+      project.getDependencies().stream()
+        .filter(d -> d.getGroupId().equals(GRADLE_GROUP_ID))
+        .filter(d -> d.getArtifactId().equals(GRADLE_ALL_ARTIFACT_ID))
+        .findAny().ifPresent(d -> projects.put(project, d));
     }
-    if (!versions.isEmpty()) {
-      new GradleApi(log,
+    final Map<String, List<String>> artifactsForVersion = projects.values().stream()
+      .map(Dependency::getVersion)
+      .collect(Collectors.toMap(Function.identity(), v -> new ArrayList<>(), (a, b) -> a));
+    for (Map.Entry<String, List<String>> artifactForVersion : artifactsForVersion.entrySet()) {
+      artifactForVersion.getValue().addAll(new GradleApi(log,
         session.getRequest().isUpdateSnapshots(),
-        versions.iterator().next(),
-        artifactIds,
+        artifactForVersion.getKey(),
         new File(session.getLocalRepository().getBasedir()).toPath()
-      ).call();
+      ).call());
+    }
+    for (Map.Entry<MavenProject, Dependency> project : projects.entrySet()) {
+      final Dependency dependency = project.getValue();
+      project.getKey().getDependencies().remove(dependency);
+      for (String artifactId : artifactsForVersion.get(dependency.getVersion())) {
+        final Dependency newDependency = new Dependency();
+        newDependency.setGroupId(GRADLE_GROUP_ID);
+        newDependency.setArtifactId(artifactId);
+        newDependency.setVersion(dependency.getVersion());
+        newDependency.setScope(dependency.getScope());
+        project.getKey().getDependencies().add(newDependency);
+      }
     }
   }
 }

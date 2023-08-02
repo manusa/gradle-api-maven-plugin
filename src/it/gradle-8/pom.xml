@@ -18,25 +18,7 @@
     </dependency>
     <dependency>
       <groupId>org.gradle</groupId>
-      <artifactId>gradle-base-services</artifactId>
-      <version>${version.gradle.8}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.gradle</groupId>
-      <artifactId>gradle-core-api</artifactId>
-      <version>${version.gradle.8}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.gradle</groupId>
-      <artifactId>gradle-core</artifactId>
-      <version>${version.gradle.8}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.gradle</groupId>
-      <artifactId>gradle-model-core</artifactId>
+      <artifactId>gradle-all</artifactId>
       <version>${version.gradle.8}</version>
       <scope>provided</scope>
     </dependency>
