@@ -16,6 +16,17 @@
     </license>
   </licenses>
 
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+    <repository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+  </distributionManagement>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -87,7 +98,6 @@
 <!--          <localRepositoryPath>${project.build.directory}/local-repo-${maven.build.timestamp}</localRepositoryPath>-->
           <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
           <settingsFile>src/it/settings.xml</settingsFile>
-<!--          <debug>true</debug>-->
           <streamLogsOnFailures>true</streamLogsOnFailures>
           <showErrors>true</showErrors>
           <properties>
