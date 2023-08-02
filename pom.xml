@@ -1,10 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd"
          xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.marcnuri.plugins</groupId>
   <artifactId>gradle-api-maven-plugin</artifactId>
-  <version>1.0.0-SNAPSHOT</version>
+  <version>0.1-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
   <name>Gradle API Maven Plugin</name>
 
@@ -15,4 +16,109 @@
     </license>
   </licenses>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <version.gradle.8>8.2.1</version.gradle.8>
+    <version.gradle.7>7.6.2</version.gradle.7>
+    <version.groovy>3.0.17</version.groovy>
+    <version.maven-core>3.9.3</version.maven-core>
+    <version.maven-plugin-annotations>3.9.0</version.maven-plugin-annotations>
+    <version.maven-enforcer-plugin>3.3.0</version.maven-enforcer-plugin>
+    <version.maven-invoker-plugin>3.6.0</version.maven-invoker-plugin>
+<!--    <maven.build.timestamp.format>yyyyMMddHHmmssSSS</maven.build.timestamp.format>-->
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-core</artifactId>
+      <version>${version.maven-core}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven.plugin-tools</groupId>
+      <artifactId>maven-plugin-annotations</artifactId>
+      <version>${version.maven-plugin-annotations}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-enforcer-plugin</artifactId>
+        <version>${version.maven-enforcer-plugin}</version>
+        <executions>
+          <execution>
+            <id>dependency-convergence</id>
+            <goals>
+              <goal>enforce</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <rules>
+            <dependencyConvergence/>
+          </rules>
+          <fail>true</fail>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-invoker-plugin</artifactId>
+        <version>${version.maven-invoker-plugin}</version>
+        <executions>
+          <execution>
+            <id>integration-test</id>
+            <goals>
+              <goal>install</goal>
+              <goal>run</goal>
+            </goals>
+          </execution>
+        </executions>
+        <configuration>
+          <projectsDirectory>src/it</projectsDirectory>
+          <cloneProjectsTo>${project.build.directory}/it</cloneProjectsTo>
+          <preBuildHookScript>setup</preBuildHookScript>
+          <postBuildHookScript>verify</postBuildHookScript>
+<!--          <localRepositoryPath>${project.build.directory}/local-repo-${maven.build.timestamp}</localRepositoryPath>-->
+          <localRepositoryPath>${project.build.directory}/local-repo</localRepositoryPath>
+          <settingsFile>src/it/settings.xml</settingsFile>
+<!--          <debug>true</debug>-->
+          <streamLogsOnFailures>true</streamLogsOnFailures>
+          <showErrors>true</showErrors>
+          <properties>
+            <project.build.sourceEncoding>${project.build.sourceEncoding}</project.build.sourceEncoding>
+            <maven.compiler.source>${maven.compiler.source}</maven.compiler.source>
+            <maven.compiler.target>${maven.compiler.target}</maven.compiler.target>
+            <version.gradle.8>${version.gradle.8}</version.gradle.8>
+            <version.gradle.7>${version.gradle.7}</version.gradle.7>
+            <version.groovy>${version.groovy}</version.groovy>
+          </properties>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <profiles>
+    <profile>
+      <id>quickly</id>
+      <activation>
+        <property>
+          <name>quickly</name>
+        </property>
+      </activation>
+      <properties>
+        <invoker.skip>true</invoker.skip>
+      </properties>
+    </profile>
+    <profile>
+      <id>it-debug</id>
+      <properties>
+        <invoker.mavenExecutable>mvnDebug</invoker.mavenExecutable>
+      </properties>
+    </profile>
+  </profiles>
 </project>
