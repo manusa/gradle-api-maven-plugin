@@ -5,9 +5,29 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.marcnuri.plugins</groupId>
   <artifactId>gradle-api-maven-plugin</artifactId>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
   <packaging>maven-plugin</packaging>
   <name>Gradle API Maven Plugin</name>
+  <description>
+    Maven plugin that registers a Maven extension that will automatically add all Gradle dependencies for a given version to your project.
+  </description>
+
+
+  <url>https://github.com/manusa/gradle-api-maven-plugin</url>
+
+  <developers>
+    <developer>
+      <name>Marc Nuri</name>
+      <email>marc@marcnuri.com</email>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/manusa/gradle-api-maven-plugin.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/manusa/gradle-api-maven-plugin.git</developerConnection>
+    <tag>HEAD</tag>
+    <url>git://github.com/manusa/gradle-api-maven-plugin.git</url>
+  </scm>
 
   <licenses>
     <license>
@@ -38,7 +58,9 @@
     <version.maven-core>3.9.3</version.maven-core>
     <version.maven-plugin-annotations>3.9.0</version.maven-plugin-annotations>
     <version.maven-enforcer-plugin>3.3.0</version.maven-enforcer-plugin>
+    <version.maven-gpg>3.1.0</version.maven-gpg>
     <version.maven-invoker-plugin>3.6.0</version.maven-invoker-plugin>
+    <version.sonatype-staging>1.6.8</version.sonatype-staging>
 <!--    <maven.build.timestamp.format>yyyyMMddHHmmssSSS</maven.build.timestamp.format>-->
   </properties>
 
@@ -129,6 +151,45 @@
       <properties>
         <invoker.mavenExecutable>mvnDebug</invoker.mavenExecutable>
       </properties>
+    </profile>
+    <profile>
+      <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${version.maven-gpg}</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+            <configuration>
+              <gpgArguments>
+                <arg>--batch</arg>
+                <arg>--pinentry-mode</arg>
+                <arg>loopback</arg>
+              </gpgArguments>
+            </configuration>
+          </plugin>
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>${version.sonatype-staging}</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>true</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>
