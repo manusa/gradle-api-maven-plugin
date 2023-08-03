@@ -26,13 +26,13 @@ public class GradleApi implements Callable<Collection<String>> {
   static final String GRADLE_GROUP_ID = "org.gradle";
   static final String GRADLE_ALL_ARTIFACT_ID = "gradle-all";
   private static final String GRADLE_DISTRIBUTION_BASE_URL = "https://services.gradle.org/distributions/";
-  private final Log log;
+  private final GradleApiLog log;
   private final boolean forceUpdate;
   private final String gradleVersion;
   private final Path repositoryBaseDir;
   private final Path gradleBinZip;
 
-  public GradleApi(Log log, boolean forceUpdate, String gradleVersion, Path repositoryBaseDir) {
+  public GradleApi(GradleApiLog log, boolean forceUpdate, String gradleVersion, Path repositoryBaseDir) {
     this.log = log;
     this.gradleVersion = gradleVersion;
     this.forceUpdate = forceUpdate;

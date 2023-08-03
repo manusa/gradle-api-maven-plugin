@@ -3,8 +3,6 @@ package com.marcnuri.plugins.gradle.api;
 import org.apache.maven.AbstractMavenLifecycleParticipant;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.plugin.logging.SystemStreamLog;
 import org.apache.maven.project.MavenProject;
 
 import javax.inject.Named;
@@ -24,7 +22,7 @@ public class GradleApiExtension extends AbstractMavenLifecycleParticipant {
 
   @Override
   public void afterProjectsRead(MavenSession session) {
-    final Log log = new SystemStreamLog();
+    final GradleApiLog log = new GradleApiLog(session.getRequest().getLoggingLevel());
     final Map<MavenProject, Dependency> projects = new HashMap<>();
     for (MavenProject project : session.getProjects()) {
       project.getDependencies().stream()
