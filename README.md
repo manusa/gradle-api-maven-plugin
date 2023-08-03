@@ -72,5 +72,5 @@ mvn versions:set -DnewVersion=0.0.2 -DgenerateBackupPoms=false
 ```
 Then, commit the changes with the following message:
 ```shell
-git commit -m "[RELEASE] v0.0.2 released, prepare for next development iteration"
+git commit -m "[RELEASE] v0.0.1 released, prepare for next development iteration"
 ```
