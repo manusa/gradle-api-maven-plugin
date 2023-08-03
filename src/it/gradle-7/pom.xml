@@ -31,13 +31,6 @@
         <artifactId>gradle-api-maven-plugin</artifactId>
         <version>@project.version@</version>
         <extensions>true</extensions>
-        <executions>
-          <execution>
-            <goals>
-              <goal>gradle-api</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>
