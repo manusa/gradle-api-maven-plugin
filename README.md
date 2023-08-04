@@ -27,7 +27,7 @@ Add the plugin with the `extensions` option enabled.
     <plugin>
       <groupId>com.marcnuri.plugins</groupId>
       <artifactId>gradle-api-maven-plugin</artifactId>
-      <version>0.1.0</version>
+      <version>0.0.2</version>
       <extensions>true</extensions>
     </plugin>
   </plugins>
