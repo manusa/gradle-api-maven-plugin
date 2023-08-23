@@ -58,7 +58,7 @@
     <version.maven-core>3.9.4</version.maven-core>
     <version.maven-plugin-annotations>3.9.0</version.maven-plugin-annotations>
     <version.maven-plugin-plugin>3.9.0</version.maven-plugin-plugin>
-    <version.maven-enforcer-plugin>3.3.0</version.maven-enforcer-plugin>
+    <version.maven-enforcer-plugin>3.4.0</version.maven-enforcer-plugin>
     <version.maven-gpg>3.1.0</version.maven-gpg>
     <version.maven-invoker-plugin>3.6.0</version.maven-invoker-plugin>
     <version.sonatype-staging>1.6.13</version.sonatype-staging>
