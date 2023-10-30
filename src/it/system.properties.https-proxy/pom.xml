@@ -6,7 +6,7 @@
   <groupId>com.marcnuri.plugins.it</groupId>
   <artifactId>no-action</artifactId>
   <version>0.1-SNAPSHOT</version>
-  <name>Maven Integration Test :: Gradle API :: HTTPS Proxy</name>
+  <name>Maven Integration Test :: Gradle API :: System properties HTTPS Proxy</name>
 
   <dependencies>
     <dependency>
