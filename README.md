@@ -52,6 +52,25 @@ You can configure the proxy by passing the following properties to the Maven bui
 mvn -Dhttps.proxyHost=proxy.example.com -Dhttps.proxyPort=8080 -Dhttps.proxyUser=proxyuser -Dhttps.proxyPassword=proxypass
 ```
 
+In addition, you can also leverage the `settings.xml` file to configure the proxy as you would do for Maven:
+
+```xml
+<settings>
+  <proxies>
+    <proxy>
+      <id>example-proxy</id>
+      <active>true</active>
+      <protocol>https</protocol>
+      <host>proxy.example.com</host>
+      <port>8080</port>
+      <username>proxyuser</username>
+      <password>proxypass</password>
+      <nonProxyHosts>localhost|*.example.com</nonProxyHosts>
+    </proxy>
+  </proxies>
+</settings>
+```
+
 ## Developing
 
 ### Integration test

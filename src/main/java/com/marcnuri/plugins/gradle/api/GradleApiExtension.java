@@ -1,20 +1,31 @@
 package com.marcnuri.plugins.gradle.api;
 
 import org.apache.maven.AbstractMavenLifecycleParticipant;
+import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 
 import javax.inject.Named;
 import java.io.File;
+import java.net.Authenticator;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.marcnuri.plugins.gradle.api.GradleApi.GRADLE_ALL_ARTIFACT_ID;
+import static com.marcnuri.plugins.gradle.api.GradleApi.GRADLE_DISTRIBUTION_BASE_URL;
 import static com.marcnuri.plugins.gradle.api.GradleApi.GRADLE_GROUP_ID;
 
 @Named("gradle-api")
@@ -34,7 +45,9 @@ public class GradleApiExtension extends AbstractMavenLifecycleParticipant {
       .map(Dependency::getVersion)
       .collect(Collectors.toMap(Function.identity(), v -> new ArrayList<>(), (a, b) -> a));
     for (Map.Entry<String, List<String>> artifactForVersion : artifactsForVersion.entrySet()) {
-      artifactForVersion.getValue().addAll(new GradleApi(log,
+      artifactForVersion.getValue().addAll(new GradleApi(
+        log,
+        selectProxy(session.getRequest()),
         session.getRequest().isUpdateSnapshots(),
         artifactForVersion.getKey(),
         new File(session.getLocalRepository().getBasedir()).toPath()
@@ -52,5 +65,53 @@ public class GradleApiExtension extends AbstractMavenLifecycleParticipant {
         project.getKey().getDependencies().add(newDependency);
       }
     }
+  }
+
+  private static Proxy selectProxy(MavenExecutionRequest request) {
+    try {
+      final URL gradleBaseUrl = new URL(GRADLE_DISTRIBUTION_BASE_URL);
+      // Proxy from properties
+      final Optional<Proxy> propertiesProxy = ProxySelector.getDefault().select(gradleBaseUrl.toURI()).stream()
+        .filter(p -> p.type() != Proxy.Type.DIRECT)
+        .findAny();
+      if (propertiesProxy.isPresent()) {
+        if (System.getProperties().get(gradleBaseUrl.getProtocol() + ".proxyUser") != null &&
+          System.getProperty(gradleBaseUrl.getProtocol() + ".proxyPassword") != null
+        ) {
+          setAuthenticator(
+            System.getProperty(gradleBaseUrl.getProtocol() + ".proxyUser"),
+            System.getProperty(gradleBaseUrl.getProtocol() + ".proxyPassword"));
+        }
+        return propertiesProxy.get();
+      }
+      // Proxy from Maven
+      if (request.getProxies() != null && !request.getProxies().isEmpty()) {
+        final Optional<Proxy> mavenProxy = request.getProxies().stream()
+          .filter(p -> p.isActive() && p.getProtocol().equalsIgnoreCase(gradleBaseUrl.getProtocol()))
+          .findAny()
+          .map(p -> {
+            if (p.getUsername() != null && p.getPassword() != null) {
+              setAuthenticator(p.getUsername(), p.getPassword());
+            }
+            return new Proxy(Proxy.Type.HTTP, new InetSocketAddress(p.getHost(), p.getPort()));
+          });
+        if (mavenProxy.isPresent()) {
+          return mavenProxy.get();
+        }
+      }
+    } catch (MalformedURLException | URISyntaxException e) {
+      throw new IllegalStateException("Invalid Gradle base URL", e);
+    }
+    return null;
+  }
+
+  static void setAuthenticator(String userName, String password) {
+    System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+    Authenticator.setDefault(new Authenticator() {
+      @Override
+      protected PasswordAuthentication getPasswordAuthentication() {
+        return new PasswordAuthentication(userName, password.toCharArray());
+      }
+    });
   }
 }

@@ -2,11 +2,7 @@ package com.marcnuri.plugins.gradle.api;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.Authenticator;
-import java.net.PasswordAuthentication;
 import java.net.Proxy;
-import java.net.ProxySelector;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -28,15 +24,17 @@ public class GradleApi implements Callable<Collection<String>> {
 
   static final String GRADLE_GROUP_ID = "org.gradle";
   static final String GRADLE_ALL_ARTIFACT_ID = "gradle-all";
-  private static final String GRADLE_DISTRIBUTION_BASE_URL = "https://services.gradle.org/distributions/";
+  static final String GRADLE_DISTRIBUTION_BASE_URL = "https://services.gradle.org/distributions/";
   private final GradleApiLog log;
+  private final Proxy proxy;
   private final boolean forceUpdate;
   private final String gradleVersion;
   private final Path repositoryBaseDir;
   private final Path gradleBinZip;
 
-  public GradleApi(GradleApiLog log, boolean forceUpdate, String gradleVersion, Path repositoryBaseDir) {
+  public GradleApi(GradleApiLog log, Proxy proxy, boolean forceUpdate, String gradleVersion, Path repositoryBaseDir) {
     this.log = log;
+    this.proxy = proxy;
     this.gradleVersion = gradleVersion;
     this.forceUpdate = forceUpdate;
     this.repositoryBaseDir = repositoryBaseDir;
@@ -56,42 +54,19 @@ public class GradleApi implements Callable<Collection<String>> {
     log.info("Downloading Gradle " + gradleVersion + "...");
     try {
       final URL remoteBin = new URL(GRADLE_DISTRIBUTION_BASE_URL + gradleBinZip.toFile().getName());
-      // Proxy
-      final Proxy proxy = ProxySelector.getDefault().select(remoteBin.toURI())
-          .stream().findAny()
-          .map(p -> {
-              if (System.getProperties().get(remoteBin.getProtocol() + ".proxyUser") != null &&
-                  System.getProperty(remoteBin.getProtocol() + ".proxyPassword") != null
-              ) {
-                System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
-                Authenticator.setDefault(new Authenticator() {
-                  @Override
-                  protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(
-                        System.getProperty(remoteBin.getProtocol() + ".proxyUser"),
-                        System.getProperty(remoteBin.getProtocol() + ".proxyPassword").toCharArray()
-                      );
-                  }
-                });
-                log.info("Using proxy with BASIC authentication");
-              } else{
-                log.info("Using proxy");
-              }
-              return p;
-          })
-        .orElse(null);
       // Connection
       final InputStream stream;
       if (proxy == null) {
         stream = remoteBin.openStream();
       } else {
+        log.info("Using proxy");
         stream = remoteBin.openConnection(proxy).getInputStream();
       }
       Files.createDirectories(resolveGroupDir());
       writeToFile(stream, gradleBinZip);
       writePom(GRADLE_ALL_ARTIFACT_ID, "pom");
       log.info("Gradle " + gradleVersion + " download complete");
-    } catch (URISyntaxException | IOException e) {
+    } catch (IOException e) {
       throw new IllegalStateException("Couldn't download Gradle " + gradleVersion, e);
     }
   }
