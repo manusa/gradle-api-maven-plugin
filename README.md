@@ -42,6 +42,16 @@ Add the plugin with the `extensions` option enabled.
 
 With these settings, you should now be able to import and make use of the Gradle API types.
 
+## Frequently Asked Questions (FAQ)
+
+### How to use behind an HTTPS proxy with authentication?
+
+You can configure the proxy by passing the following properties to the Maven build:
+
+```shell
+mvn -Dhttps.proxyHost=proxy.example.com -Dhttps.proxyPort=8080 -Dhttps.proxyUser=proxyuser -Dhttps.proxyPassword=proxypass
+```
+
 ## Developing
 
 ### Integration test
