@@ -70,17 +70,21 @@ Then, configure your IDE to perform a remote debug connection to port `8000`.
 
 The project version should always point to the next release version.
 
-To release a new version, first tag the release with the current `pom.xml` version e.g. `v0.0.3`.
+To release a new version, first tag the release with the current `pom.xml` version e.g. `v0.0.4`.
+
 ```shell
-git tag v0.0.3
-git push origin v0.0.3
+git tag v0.0.4
+git push origin v0.0.4
 ```
 
 Once we perform a release we need to set the next release version in the `pom.xml` file.
+
 ```shell
-mvn versions:set -DnewVersion=0.0.4 -DgenerateBackupPoms=false
+mvn versions:set -DnewVersion=0.0.5 -DgenerateBackupPoms=false
 ```
+
 Then, commit the changes with the following message:
+
 ```shell
-git commit -m "[RELEASE] v0.0.3 released, prepare for next development iteration"
+git commit -m "[RELEASE] v0.0.4 released, prepare for next development iteration"
 ```
