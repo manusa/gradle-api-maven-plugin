@@ -1,9 +1,12 @@
 package com.marcnuri.plugins.gradle.api;
 
-import org.apache.maven.plugin.logging.Log;
-
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.Authenticator;
+import java.net.PasswordAuthentication;
+import java.net.Proxy;
+import java.net.ProxySelector;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
@@ -53,11 +56,42 @@ public class GradleApi implements Callable<Collection<String>> {
     log.info("Downloading Gradle " + gradleVersion + "...");
     try {
       final URL remoteBin = new URL(GRADLE_DISTRIBUTION_BASE_URL + gradleBinZip.toFile().getName());
+      // Proxy
+      final Proxy proxy = ProxySelector.getDefault().select(remoteBin.toURI())
+          .stream().findAny()
+          .map(p -> {
+              if (System.getProperties().get(remoteBin.getProtocol() + ".proxyUser") != null &&
+                  System.getProperty(remoteBin.getProtocol() + ".proxyPassword") != null
+              ) {
+                System.setProperty("jdk.http.auth.tunneling.disabledSchemes", "");
+                Authenticator.setDefault(new Authenticator() {
+                  @Override
+                  protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(
+                        System.getProperty(remoteBin.getProtocol() + ".proxyUser"),
+                        System.getProperty(remoteBin.getProtocol() + ".proxyPassword").toCharArray()
+                      );
+                  }
+                });
+                log.info("Using proxy with BASIC authentication");
+              } else{
+                log.info("Using proxy");
+              }
+              return p;
+          })
+        .orElse(null);
+      // Connection
+      final InputStream stream;
+      if (proxy == null) {
+        stream = remoteBin.openStream();
+      } else {
+        stream = remoteBin.openConnection(proxy).getInputStream();
+      }
       Files.createDirectories(resolveGroupDir());
-      writeToFile(remoteBin.openStream(), gradleBinZip);
+      writeToFile(stream, gradleBinZip);
       writePom(GRADLE_ALL_ARTIFACT_ID, "pom");
       log.info("Gradle " + gradleVersion + " download complete");
-    } catch (IOException e) {
+    } catch (URISyntaxException | IOException e) {
       throw new IllegalStateException("Couldn't download Gradle " + gradleVersion, e);
     }
   }
