@@ -19,4 +19,4 @@ jobs:
           java-version: '8'
           distribution: 'temurin'
       - name: Maven Build
-        run: ./mvnw verify
+        run: make test
