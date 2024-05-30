@@ -24,7 +24,9 @@ public class GradleApi implements Callable<Collection<String>> {
 
   static final String GRADLE_GROUP_ID = "org.gradle";
   static final String GRADLE_ALL_ARTIFACT_ID = "gradle-all";
+  static final String GRADLE_TOOLING_API_ARTIFACT_ID = "gradle-tooling-api";
   static final String GRADLE_DISTRIBUTION_BASE_URL = "https://services.gradle.org/distributions/";
+  static final String GRADLE_LIB_RELEASES_BASE_URL = "https://repo.gradle.org/artifactory/libs-releases/";
   private final GradleApiLog log;
   private final Proxy proxy;
   private final boolean forceUpdate;
@@ -45,29 +47,43 @@ public class GradleApi implements Callable<Collection<String>> {
   @Override
   public final Collection<String> call() {
     if (forceUpdate || !gradleBinZip.toFile().exists()) {
-      download();
+      downloadDistribution();
+      downloadGradleToolingApi();
     }
     return extract();
   }
 
-  private void download() {
+  private void downloadDistribution() {
     log.info("Downloading Gradle " + gradleVersion + "...");
     try {
-      final URL remoteBin = new URL(GRADLE_DISTRIBUTION_BASE_URL + gradleBinZip.toFile().getName());
-      // Connection
-      final InputStream stream;
-      if (proxy == null) {
-        stream = remoteBin.openStream();
-      } else {
-        log.info("Using proxy");
-        stream = remoteBin.openConnection(proxy).getInputStream();
-      }
       Files.createDirectories(resolveGroupDir());
-      writeToFile(stream, gradleBinZip);
+      final InputStream gradleBinStream = streamUrl(GRADLE_DISTRIBUTION_BASE_URL + gradleBinZip.toFile().getName());
+      writeToFile(gradleBinStream, gradleBinZip);
       writePom(GRADLE_ALL_ARTIFACT_ID, "pom");
       log.info("Gradle " + gradleVersion + " download complete");
     } catch (IOException e) {
       throw new IllegalStateException("Couldn't download Gradle " + gradleVersion, e);
+    }
+  }
+
+  /*
+   * Gradle tooling api artifact needs to be downloaded from the Maven repository.
+   * This artifact is published by Gradle to https://repo.gradle.org/ui/native/libs-releases/
+   * The published artifact is different from that included in the Gradle official distribution.
+   * It's published to Maven to add support for IDEs and other tools to interact with Gradle,
+   * and includes additional classes that are not included in the Gradle distribution.
+   * (org.gradle.wrapper, org.gradle.internal, org.gradle.api, and more)
+   */
+  private void downloadGradleToolingApi() {
+    log.info("Downloading Gradle Tooling API " + gradleVersion + "...");
+    try {
+      final InputStream gradleToolingApi = streamUrl(GRADLE_LIB_RELEASES_BASE_URL +"org/gradle/gradle-tooling-api/" +
+        gradleVersion + "/" + GRADLE_TOOLING_API_ARTIFACT_ID + "-" + gradleVersion + ".jar");
+      writeToFile(gradleToolingApi, resolveArtifactJar(GRADLE_TOOLING_API_ARTIFACT_ID));
+      writePom(GRADLE_TOOLING_API_ARTIFACT_ID, "jar");
+      log.info("Gradle Tooling API " + gradleVersion + " download complete");
+    } catch (IOException e) {
+      throw new IllegalStateException("Couldn't download Gradle Tooling API " + gradleVersion, e);
     }
   }
 
@@ -80,6 +96,8 @@ public class GradleApi implements Callable<Collection<String>> {
       final Set<ZipEntry> applicableEntries = zipFile.stream()
         .filter(e -> e.getName().indexOf("gradle-", e.getName().lastIndexOf('/') + 1) >= 0)
         .filter(e -> e.getName().endsWith("-" + gradleVersion + ".jar"))
+        // Gradle Tooling API requires special treatment
+        .filter(e -> !e.getName().endsWith("gradle-tooling-api-" + gradleVersion + ".jar"))
         .collect(Collectors.toSet());
       for (ZipEntry entry : applicableEntries) {
         final String artifactJar = entry.getName().substring(entry.getName().lastIndexOf('/') + 1);
@@ -108,6 +126,19 @@ public class GradleApi implements Callable<Collection<String>> {
 
   private Path resolveGroupDir() {
     return repositoryBaseDir.resolve("org").resolve("gradle");
+  }
+
+  private InputStream streamUrl(String url) throws IOException {
+    final URL remoteBin = new URL(url);
+    // Connection
+    final InputStream stream;
+    if (proxy == null) {
+      stream = remoteBin.openStream();
+    } else {
+      log.info("Using proxy");
+      stream = remoteBin.openConnection(proxy).getInputStream();
+    }
+    return stream;
   }
 
   private void writePom(String artifact, String packaging) throws IOException {
