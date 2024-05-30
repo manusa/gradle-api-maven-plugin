@@ -140,6 +140,10 @@
             <version.gradle.7>${version.gradle.7}</version.gradle.7>
             <version.groovy>${version.groovy}</version.groovy>
           </properties>
+          <scriptVariables>
+            <projectBuildDirectory>${project.build.directory}</projectBuildDirectory>
+            <versionGradle8>${version.gradle.8}</versionGradle8>
+          </scriptVariables>
         </configuration>
       </plugin>
     </plugins>
