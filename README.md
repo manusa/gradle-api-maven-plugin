@@ -27,7 +27,7 @@ Add the plugin with the `extensions` option enabled.
     <plugin>
       <groupId>com.marcnuri.plugins</groupId>
       <artifactId>gradle-api-maven-plugin</artifactId>
-      <version>0.0.5</version>
+      <version>0.0.6</version>
       <extensions>true</extensions>
     </plugin>
   </plugins>
@@ -117,6 +117,6 @@ To release a new version manually:
 4. Commit the changes with the following message:
    ```shell
    git add .
-   git commit -m "[RELEASE] v0.0.5 released, prepare for next development iteration"
+   git commit -m "[RELEASE] v0.0.6 released, prepare for next development iteration"
    git push origin master
    ```
