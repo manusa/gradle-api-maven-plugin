@@ -85,25 +85,38 @@ mvn -Pit-debug verify
 ```
 Then, configure your IDE to perform a remote debug connection to port `8000`.
 
-## Release process
+### Release Process
 
-The project version should always point to the next release version.
+#### Release to Maven Central
 
-To release a new version, first tag the release with the current `pom.xml` version e.g. `v0.0.5`.
-
-```shell
-git tag v0.0.5
-git push origin v0.0.5
-```
-
-Once we perform a release we need to set the next release version in the `pom.xml` file.
+To release a new version automatically:
 
 ```shell
-mvn versions:set -DnewVersion=0.0.6 -DgenerateBackupPoms=false
+make release V=X.Y.Z VS=X.Y
 ```
+- `V`: New version to release.
+- `VS`: New SNAPSHOT version for Maven.
 
-Then, commit the changes with the following message:
+To release a new version manually:
 
-```shell
-git commit -m "[RELEASE] v0.0.5 released, prepare for next development iteration"
-```
+1. Update the version in the `pom.xml` file.
+   ```shell
+   mvn versions:set -DnewVersion=X.Y.Z -DgenerateBackupPoms=false
+   ```
+2. Commit and tag the release with the  `pom.xml` version.
+   ```shell
+   git add .
+   git commit -m "[RELEASE] vX.Y.Z released"
+   git tag vX.Y.Z
+   git push origin vX.Y.Z
+   ```
+3. Update the version in the `pom.xml` file to the next snapshot version.
+   ```shell
+   mvn versions:set -DnewVersion=X.Y-SNAPSHOT -DgenerateBackupPoms=false
+   ```
+4. Commit the changes with the following message:
+   ```shell
+   git add .
+   git commit -m "[RELEASE] v0.0.5 released, prepare for next development iteration"
+   git push origin master
+   ```
