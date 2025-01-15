@@ -52,7 +52,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
-    <version.gradle.8>8.2.1</version.gradle.8>
+    <version.gradle.8>8.12</version.gradle.8>
     <version.gradle.7>7.6.2</version.gradle.7>
     <version.groovy>3.0.17</version.groovy>
     <version.maven-core>3.9.7</version.maven-core>
