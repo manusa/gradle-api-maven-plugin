@@ -50,7 +50,9 @@ public class GradleApi implements Callable<Collection<String>> {
       downloadDistribution();
       downloadGradleToolingApi();
     }
-    return extract();
+    final Set<String> artifactIds = extract();
+    artifactIds.add(GRADLE_TOOLING_API_ARTIFACT_ID);
+    return artifactIds;
   }
 
   private void downloadDistribution() {
