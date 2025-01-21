@@ -1,5 +1,6 @@
 import java.util.jar.JarFile
 
+// Dependency is downloaded to the local Maven repository
 def gradleToolingApiJar = new File(projectBuildDirectory,
     "local-repo/org/gradle/gradle-tooling-api/${versionGradle8}/gradle-tooling-api-${versionGradle8}.jar")
 assert gradleToolingApiJar.exists()
@@ -16,3 +17,7 @@ jar.entries().each {
 }
 assert containsManifest
 assert containsGradleApi
+
+// Project contains dependency to gradle-tooling-api (dependency:tree output)
+def buildLog = new File(basedir, 'build.log').text
+assert buildLog.contains('[INFO] +- org.gradle:gradle-tooling-api:jar:')
