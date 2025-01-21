@@ -1,4 +1,5 @@
 MAVEN_OPTIONS=
+LICENSE_FILE=license-header.txt
 
 .PHONY: clean
 clean:
@@ -25,3 +26,13 @@ release:
 	@git add .
 	@git commit -m "[RELEASE] v$(V) released, prepare for next development iteration"
 	@git push origin main
+
+.PHONY: license
+license:
+	@license_len=$$(wc -l $(LICENSE_FILE) | cut -f1 -d ' ') &&																\
+	 files=$$(find . -type f -name "*.java") &&																								\
+	 for file in $$files; do																																	\
+	   echo "Applying license to $$file";																											\
+	   head -n $$license_len $$file | diff -q $(LICENSE_FILE) - > /dev/null ||								\
+	     ( ( cat $(LICENSE_FILE); echo; cat $$file ) > $$file.temp; mv $$file.temp $$file )		\
+	 done

@@ -120,3 +120,15 @@ To release a new version manually:
    git commit -m "[RELEASE] v0.0.6 released, prepare for next development iteration"
    git push origin master
    ```
+
+#### Create GitHub Release
+
+Once the release is published to Maven Central, create a new [GitHub release](https://github.com/manusa/gradle-api-maven-plugin/releases/new) for the released tag.
+
+### License Headers
+
+Whenever a new file is created, the license header must be added. To add the license header to all files:
+
+```shell
+make license
+```
